@@ -10,22 +10,24 @@ import {
 import { createPlaylistTrack } from "#db/queries/playlists_tracks";
 import { getTracksByPlaylistId } from "#db/queries/tracks";
 
-router
-  .route("/")
-  .get(async (req, res) => {
-    const playlists = await getPlaylists();
-    res.send(playlists);
-  })
-  .post(async (req, res) => {
-    if (!req.body) return res.status(400).send("Request body is required.");
 
-    const { name, description } = req.body;
-    if (!name || !description)
-      return res.status(400).send("Request body requires: name, description");
+router.post("/", async (req, res, next) => {
+  try {
+    const { name, description, user_id } = req.body; 
 
-    const playlist = await createPlaylist(name, description);
+    if (!name || !description || !user_id) {
+      return res
+        .status(400)
+        .send("Request body requires: name, description, user_id");
+    }
+
+    const playlist = await createPlaylist(name, description, user_id);
     res.status(201).send(playlist);
-  });
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 router.param("id", async (req, res, next, id) => {
   const playlist = await getPlaylistById(id);

@@ -1,6 +1,6 @@
 import db from "#db/client";
 
-export async function createPlaylistTrack(playlistId, trackId) {
+export async function createPlaylistTrack({ playlist_id, track_id }) {
   const sql = `
   INSERT INTO playlists_tracks
     (playlist_id, track_id)
@@ -10,6 +10,6 @@ export async function createPlaylistTrack(playlistId, trackId) {
   `;
   const {
     rows: [playlistTrack],
-  } = await db.query(sql, [playlistId, trackId]);
+  } = await db.query(sql, [playlist_id, track_id]);
   return playlistTrack;
 }
