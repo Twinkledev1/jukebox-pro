@@ -27,10 +27,12 @@ export async function getPlaylistById(id) {
   const sql = `
   SELECT *
   FROM playlists
-  WHERE id = $1
+  left join 
+  WHERE id = $1;
   `;
   const {
     rows: [playlist],
   } = await db.query(sql, [id]);
-  return playlist;
+  console.log(playlist,"An aaray of playlists")
+  return playlist[0];
 }
