@@ -12,10 +12,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
+// Mount routers
 app.use("/tracks", tracksRouter);
 app.use("/playlists", playlistsRouter);
-app.use("/users", usersRouter)
+app.use("/users", usersRouter);
 
+// Error handling middleware
 app.use((err, req, res, next) => {
   // A switch statement can be used instead of if statements
   // when multiple cases are handled the same way.

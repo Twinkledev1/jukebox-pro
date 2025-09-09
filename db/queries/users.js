@@ -20,7 +20,7 @@ export async function getUserById(id){
   return user.rows[0];
 }
 
-export async function getUserByUsername(){
+export async function getUserByUsername(username){
   const sql = `SELECT * FROM users WHERE username = $1;`;
   const user = await db.query(sql,[username]);
   return user.rows[0];
