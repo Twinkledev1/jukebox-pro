@@ -1,41 +1,64 @@
-import { createUser } from "#db/queries/users";
 import express from "express";
-const usersRouter = express.Router();
-export default usersRouter;
+import bcrypt from "bcrypt";
+import { createUser, getUserByUsername } from "#db/queries/users";
+import { createToken } from "#utils/jwt";
+import requireBody from "#middleware/requireBody";
 
-// ---------------------POST /users/register----------------------//
+const router = express.Router();
+export default router;
 
-usersRouter.post("/register",async(req,res) =>{
-    const username = req.body.username.trim();
-    const password = req.body.password.trim();
+// POST /users/register
+router.post(
+  "/register",
+  requireBody(["username", "password"]),
+  async (req, res, next) => {
+    try {
+      const { username, password } = req.body;
 
-// 1. Validate body
-if (!username || !password) {
-    return res.status(400).send("Request body requires: username, password");
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user in DB
+      const user = await createUser(username, hashedPassword);
+
+      // Generate JWT using the utility function
+      const token = createToken({ id: user.id });
+
+      // Send token as plain text (based on test expectations)
+      res.status(201).send(token);
+    } catch (err) {
+      next(err);
+    }
   }
+);
 
-  // 2. Hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
+// POST /users/login
+router.post(
+  "/login",
+  requireBody(["username", "password"]),
+  async (req, res, next) => {
+    try {
+      const { username, password } = req.body;
 
+      // Find user by username
+      const user = await getUserByUsername(username);
+      if (!user) {
+        return res.status(400).send("Invalid credentials");
+      }
 
-    // 3. Create user in DB
-    const user = await createUser(username, hashedPassword);
+      // Check password
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(400).send("Invalid credentials");
+      }
 
-    // 4. Generate JWT
-    const token = jwt.sign(
-      { id: user.id },             // payload
-      process.env.JWT_SECRET,      // secret key (store in .env)
-      { expiresIn: "1h" }          // token expires in 1 hour
-    );
+      // Generate JWT using the utility function
+      const token = createToken({ id: user.id });
 
-    // 5. Send response
-    res.status(201).json({
-      message: "User created successfully",
-      user: { id: user.id, username: user.username },
-      token,
-    });
- res.json(users);
-
-});
-
-
+      // Send token as plain text
+      res.status(200).send(token);
+    } catch (err) {
+      next(err);
+    }
+  }
+);

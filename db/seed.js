@@ -45,7 +45,7 @@ async function seed() {
     // ------------------ Seed Playlists ------------------
     const playlists = [];
     for (let j = 1; j <= 10; j++) {
-      // randomly assign this playlist to one of the seeded users
+      
       const user = users[Math.floor(Math.random() * users.length)];
       const playlist = await createPlaylist({
         name: "Playlist " + j,
@@ -59,6 +59,7 @@ async function seed() {
     // ------------------ Seed Playlist-Tracks ------------------
 
     for (const user of users) {
+      
       const userPlaylists = playlists.filter((p) => p.user_id === user.id);
 
       if (userPlaylists.length > 0) {
